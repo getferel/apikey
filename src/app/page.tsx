@@ -74,34 +74,21 @@ export default function ApiTesterPage() {
     setResult(null);
 
     try {
-      const config = apiConfigs[provider];
-      const headers = { ...config.headers };
-      
-      if (provider === "anthropic") {
-        headers["x-api-key"] = apiKey;
-      } else if (provider === "openai") {
-        headers["Authorization"] = `Bearer ${apiKey}`;
-      }
-      
-      // For Gemini, add API key to URL
-      const url = provider === "gemini" 
-        ? `${config.endpoint}?key=${apiKey}`
-        : config.endpoint;
-
-      const response = await fetch(url, {
+      const response = await fetch("/api/test", {
         method: "POST",
-        headers,
-        body: JSON.stringify(config.requestBody(prompt, apiKey)),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ provider, apiKey, prompt }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        throw new Error(data.error || `HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      const resultText = config.parseResponse(data);
-      setResult(resultText);
+      setResult(data.result);
     } catch (err: any) {
       setError(err.message || "Request failed");
     } finally {
