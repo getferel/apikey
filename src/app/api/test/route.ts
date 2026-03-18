@@ -20,8 +20,9 @@ export async function POST(request: NextRequest) {
         endpoint = "https://api.anthropic.com/v1/messages";
         headers = {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
+          "x-api-key": apiKey.trim(),
           "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
         };
         body = {
           model: "claude-3-5-sonnet-20241022",
@@ -68,8 +69,16 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json();
+      const errorMsg = errorData.error?.message || `HTTP ${response.status}`;
+      console.error(`API Error (${provider}):`, errorMsg, errorData);
       return NextResponse.json(
-        { error: errorData.error?.message || `HTTP ${response.status}` },
+        { 
+          error: errorMsg,
+          details: errorData,
+          hint: provider === "anthropic" && errorData.type === "authentication_error" 
+            ? "Check your API key format (should start with sk-ant-)" 
+            : undefined
+        },
         { status: response.status }
       );
     }

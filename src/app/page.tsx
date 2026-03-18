@@ -142,12 +142,17 @@ export default function ApiTesterPage() {
                   <input
                     type="password"
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={(e) => setApiKey(e.target.value.trim())}
                     placeholder={`Paste your ${apiConfigs[provider].name} API key`}
                     required
                     className="w-full bg-secondary/50 border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {provider === "anthropic" && "Format: sk-ant-..."}
+                  {provider === "gemini" && "Format: AIza..."}
+                  {provider === "openai" && "Format: sk-..."}
+                </p>
               </div>
 
               {/* Prompt Input */}
